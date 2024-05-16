@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ohgiraffers.dosirak.admin.member.model.dao.MemberMapper">
+    <resultMap id="member" type="com.ohgiraffers.dosirak.admin.member.model.dto.MemberDTO">
+        <id property="id" column="ID"/>
+        <result property="name" column="NAME"/>
+        <result property="birth" column="BIRTH"/>
+        <result property="gender" column="GENDER"/>
+        <result property="phone" column="PHONE"/>
+        <result property="email" column="EMAIL"/>
+        <result property="address1" column="ADDRESS1"/>
+        <result property="address2" column="ADDRESS2"/>
+        <result property="address3" column="ADDRESS3"/>
+        <result property="agree" column="AGREE"/>
+        <result property="pwd" column="PWD"/>
+        <result property="joindate" column="JOINDATE"/>
+        <result property="withdrawal" column="WITHDRAWAL"/>
+        <result property="role" column="ROLE"/>
+    </resultMap>
+    <select id="findAllMember" resultMap="member">
+        SELECT ID, NAME, BIRTH, GENDER, PHONE, EMAIL, AGREE, JOINDATE
+        FROM USER WHERE WITHDRAWAL = FALSE
+        ORDER BY JOINDATE DESC
+    </select>
+    <select id="selectMemberView" resultMap="member">
+        SELECT ID, NAME, BIRTH, GENDER, PHONE, EMAIL, ADDRESS1, ADDRESS2, ADDRESS3, AGREE, JOINDATE
+        FROM USER WHERE WITHDRAWAL = FALSE AND ID = #{id};
+    </select>
+    <update id="modifyMember">
+        UPDATE USER
+        SET PHONE = #{phone}, EMAIL = #{email}, AGREE = #{agree}, ADDRESS1 = #{address1}, ADDRESS2 = #{address2}, ADDRESS3 = #{address3}
+        WHERE ID = #{id}
+    </update>
+    <select id="searchMemberForm" resultMap="member">
+        SELECT ID, NAME, BIRTH, GENDER, PHONE, EMAIL, AGREE, JOINDATE
+        FROM USER WHERE WITHDRAWAL = FALSE
+        <choose>
+            <when test="condition == 'id'">
+                AND ID LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'name'">
+                AND NAME LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'phone'">
+                AND PHONE LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'email'">
+                AND EMAIL LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <otherwise>
+                AND (ID LIKE CONCAT('%', #{value}, '%') OR NAME LIKE CONCAT('%', #{value}, '%')
+                OR PHONE LIKE CONCAT('%', #{value}, '%') OR EMAIL LIKE CONCAT('%', #{value}, '%'))
+            </otherwise>
+        </choose>
+    </select>
+    <update id="memberPwdReset">
+        UPDATE USER SET PWD = #{pwd} WHERE ID = #{id}
+    </update>
+
+    <resultMap id="manager" type="com.ohgiraffers.dosirak.admin.member.model.dto.ManagerDTO">
+        <id property="id" column="ID"/>
+        <result property="name" column="NAME"/>
+        <result property="birth" column="BIRTH"/>
+        <result property="gender" column="GENDER"/>
+        <result property="contact" column="CONTACT"/>
+        <result property="email" column="EMAIL"/>
+        <result property="position" column="POSITION"/>
+        <result property="department" column="DEPARTMENT"/>
+        <result property="authority" column="AUTHORITY"/>
+        <result property="pwd" column="PWD"/>
+        <result property="joindate" column="JOINDATE"/>
+        <result property="withdrawal" column="WITHDRAWAL"/>
+        <result property="role" column="ROLE"/>
+    </resultMap>
+    <select id="findAllManager" resultMap="manager">
+        SELECT ID, NAME, BIRTH, GENDER, CONTACT, EMAIL, POSITION, DEPARTMENT, JOINDATE
+        FROM ADMIN WHERE WITHDRAWAL = FALSE
+        ORDER BY JOINDATE DESC
+    </select>
+    <select id="selectManagerView" resultMap="manager">
+        SELECT ID, NAME, BIRTH, GENDER, CONTACT, EMAIL, POSITION, DEPARTMENT, AUTHORITY, JOINDATE, WITHDRAWAL
+        FROM ADMIN WHERE WITHDRAWAL = FALSE AND ID = #{id};
+    </select>
+    <update id="modifyManager">
+        UPDATE ADMIN
+        SET DEPARTMENT = #{department}, POSITION = #{position}, CONTACT = #{contact}, AUTHORITY = #{authority}, EMAIL = #{email}, WITHDRAWAL = #{withdrawal}
+        WHERE ID = #{id}
+    </update>
+    <insert id="registManager">
+        INSERT INTO ADMIN (ID, NAME, BIRTH, GENDER, EMAIL, PWD, AUTHORITY, JOINDATE, ROLE)
+        VALUES (#{id}, #{name}, #{birth}, #{gender}, #{email}, #{pwd}, '3', CURDATE(), 'ADMIN')
+    </insert>
+    <select id="checkDuplication" resultType="string">
+        SELECT ID FROM ADMIN WHERE ID = #{id}
+    </select>
+    <update id="managerPwdReset">
+        UPDATE ADMIN SET PWD = #{pwd} WHERE ID = #{id}
+    </update>
+    <select id="searchManagerForm" resultMap="manager">
+        SELECT ID, NAME, BIRTH, GENDER, CONTACT, EMAIL, POSITION, DEPARTMENT, JOINDATE
+        FROM ADMIN WHERE WITHDRAWAL = FALSE
+        <choose>
+            <when test="condition == 'id'">
+                AND ID LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'name'">
+                AND NAME LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'contact'">
+                AND CONTACT LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'email'">
+                AND EMAIL LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'position'">
+                AND POSITION LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <when test="condition == 'department'">
+                AND DEPARTMENT LIKE CONCAT('%', #{value}, '%')
+            </when>
+            <otherwise>
+                AND (ID LIKE CONCAT('%', #{value}, '%') OR NAME LIKE CONCAT('%', #{value}, '%')
+                OR CONTACT LIKE CONCAT('%', #{value}, '%') OR EMAIL LIKE CONCAT('%', #{value}, '%')
+                OR POSITION LIKE CONCAT('%', #{value}, '%') OR DEPARTMENT LIKE CONCAT('%', #{value}, '%'))
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="joinCount" resultType="java.util.Map">
+        SELECT COUNT(*) AS COUNT, JOINDATE FROM USER
+        WHERE JOINDATE BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+        GROUP BY JOINDATE ORDER BY JOINDATE
+    </select>
+    <select id="joinNum" resultType="int">
+        SELECT COUNT(*) AS JOINNUM FROM USER
+        WHERE CURDATE() >= JOINDATE
+    </select>
+    <select id="perProfit" resultType="java.util.Map">
+        SELECT SUM(PAY_PRICE) AS PAY_PRICE, PAY_DATE FROM PAY
+        WHERE PAY_DATE BETWEEN DATE_SUB(CURDATE(), INTERVAL 6 DAY) AND CURDATE()
+        GROUP BY PAY_DATE ORDER BY PAY_DATE
+    </select>
+    <select id="profit" resultType="int">
+        SELECT SUM(PAY_PRICE) AS PROFIT FROM PAY
+        WHERE CURDATE() >= PAY_DATE
+    </select>
+    <select id="reviewNum" resultType="int">
+        SELECT COUNT(*) AS REVIEWNUM FROM REVIEW
+        WHERE CURDATE() >= REVIEW_DATE
+    </select>
+    <select id="askNum" resultType="int">
+        SELECT COUNT(*) AS ASKNUM FROM ASK
+        WHERE CURDATE() >= ASK_DATE
+    </select>
+    <select id="recentOrderList" resultType="java.util.Map">
+        SELECT ORDER_CODE, ORDER_STATUS, ID, PAY_PRICE, PAY_DATE
+        FROM `ORDER` O LEFT JOIN PAY P USING (ORDER_CODE)
+        WHERE CURDATE() >= PAY_DATE
+        ORDER BY PAY_DATE DESC
+    </select>
+
+</mapper>

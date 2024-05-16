@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>1대1 문의 관리</title>
+    <th:block th:replace="/admin/customer/common/head.html"></th:block>
+</head>
+<body class="sb-nav-fixed">
+<th:block th:replace="/admin/customer/common/header.html"></th:block>
+<div id="layoutSidenav">
+    <th:block th:replace="/admin/customer/common/sideNav.html"></th:block>
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <h2 class="mt-4">1대1 문의 관리페이지</h2>
+                <div class="card mb-4 mt-4">
+                    <div class="card-header justify-content-between d-flex align-items-center">
+                        <i class="fa-table me-1"></i>
+                        <div>
+                            <form id="searchForm" method="GET" action="/admin/customer/askList">
+                            <div class="text-end" style="display: flex;">
+                                    <label>
+                                        <select class="datatable-selector" name="searchStatus" id="searchStatus">
+                                            <option value="">답변상태 선택</option>
+                                            <option value="false">미답변</option>
+                                            <option value="true">답변완료</option>
+                                        </select>
+                                    </label>
+                                    <label>
+                                        <select id="searchCondition" name="searchCondition" class="hp_w120px datatable-selector">
+                                            <option value="">유형 선택</option>
+                                            <option value="1">회원</option>
+                                            <option value="2">주문/결제</option>
+                                            <option value="3">배송/반품</option>
+                                            <option value="4">취소/교환/환불</option>
+                                            <option value="5">서비스/기타</option>
+                                        </select>
+                                    </label>
+                                    <div class="input-group">
+                                        <input id="searchInput" name="searchValue" class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                                        <button class="btn btn-primary" id="btnNavbarSearch" type="submit"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="datatablesSimple">
+                            <thead>
+                            <tr>
+                                <th>문의코드</th>
+                                <th>문의분류</th>
+                                <th>문의제목</th>
+                                <th>문의날짜</th>
+                                <th>회원아이디</th>
+                                <th>수정일시</th>
+                                <th>삭제여부</th>
+                                <th>답변상태</th>
+                            </tr>
+                            </thead>
+                            <tfoot>
+                            <tr>
+                                <th>문의코드</th>
+                                <th>문의분류</th>
+                                <th>문의제목</th>
+                                <th>문의날짜</th>
+                                <th>회원아이디</th>
+                                <th>수정일시</th>
+                                <th>삭제여부</th>
+                                <th>답변상태</th>
+                            </tr>
+                            </tfoot>
+                            <tbody>
+                            <tr th:each="ask : ${ askList }">
+                                <td th:text="${ ask.askCode }"></td>
+                                <td th:text="${ ask.askCategoryDTO.askCategoryName }"></td>
+                                <td><a th:href="|askDetail?askCode=${ ask.askCode }|" th:text="${ ask.askTitle }"></a></td>
+                                <td th:text="${ ask.askDate }"></td>
+                                <td th:text="${ ask.userId }"></td>
+                                <td th:text="${ ask.askDate }"></td>
+                                <td th:text="${ ask.askDelete == true ? 'Y' : 'N' }"></td>
+                                <td th:text="${ ask.answerDTO.answerStatus == true ? '답변완료' : '미답변' }"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="/admin/customer/common/foot.html"></th:block>
+<script>
+    window.addEventListener('DOMContentLoaded', event => {
+        // 데이터 테이블 초기화
+        const datatablesSimple = document.getElementById('datatablesSimple');
+        let dataTable;
+        if (datatablesSimple) {
+            // 검색 기능을 활성화하여 테이블을 초기화합니다.
+            dataTable = new simpleDatatables.DataTable(datatablesSimple, {
+                searchable: true,
+            });
+        }
+    });
+</script>
+<script>
+    // 검색 상태와 검색 조건을 hidden input에 설정하는 함수
+    function setSearchParams() {
+        const searchStatusSelect = document.getElementById('searchStatus');
+        const searchConditionSelect = document.getElementById('searchCondition');
+
+    }
+
+    // 폼 제출 이벤트 핸들러 추가
+    const searchForm = document.getElementById('searchForm');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(event) {
+            setSearchParams(); // 폼을 제출하기 전에 검색 상태와 검색 조건을 hidden input에 설정
+        });
+    }
+</script>
+<script>
+    // 페이지 로드 시 success 메시지를 확인하여 alert 창을 띄우고 페이지를 리디렉션합니다.
+    window.onload = function() {
+        const successMessage = "[[${successMessage}]]";
+        if (successMessage) {
+            alert(successMessage);
+            window.location.href = '/admin/customer/askList';
+        }
+    };
+</script>
+<script>
+    // 페이지가 새로고침되었을 때 실행될 함수
+    function checkForRefresh() {
+        if (performance.navigation.type === 1) {
+            // 1은 페이지 새로고침을 나타냅니다.
+            // 페이지가 새로고침된 경우, 첫 페이지로 리다이렉트합니다.
+            window.location.href = 'http://localhost:8080/admin/customer/askList';
+        }
+    }
+
+    // 페이지 로드 시 checkForRefresh 함수를 실행합니다.
+    window.onload = checkForRefresh;
+</script>
+</body>
+</html>

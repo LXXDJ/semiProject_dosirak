@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-database.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-admin.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-customer_img.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-order.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-review.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-suitBox.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-survey.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/Dosirak/dbscript/create-table-user.sql" dialect="MySQL" />
+  </component>
+</project>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ohgiraffers.dosirak.user.order.model.dao.CartMapper">
+
+    <!-- MemberDTO Mapping -->
+    <resultMap id="MemberResultMap" type="com.ohgiraffers.dosirak.admin.member.model.dto.MemberDTO">
+        <id property="id" column="ID"/>
+        <result property="name" column="NAME"/>
+        <result property="phone" column="PHONE"/>
+        <result property="address1" column="ADDRESS1"/>
+        <result property="address2" column="ADDRESS2"/>
+        <result property="address3" column="ADDRESS3"/>
+    </resultMap>
+
+    <!-- PayDTO Mapping -->
+    <resultMap id="PayResultMap" type="com.ohgiraffers.dosirak.admin.order.model.dto.PayDTO">
+        <result property="payPrice" column="pay_price"/>
+        <result property="payDate" column="pay_date"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="payMethod" column="pay_method"/>
+        <result property="orderCode" column="order_code"/>
+    </resultMap>
+
+    <!-- ProductDTO Mapping -->
+    <resultMap id="ProductResultMap" type="com.ohgiraffers.dosirak.admin.product.dto.productDTO">
+        <id property="productCode" column="product_code"/>
+        <result property="productName" column="product_name"/>
+        <result property="productPrice" column="product_price"/>
+    </resultMap>
+
+    <!-- CartDTO Mapping -->
+    <resultMap id="CartResultMap" type="com.ohgiraffers.dosirak.user.order.model.dto.CartDTO">
+        <result property="cartitemCount" column="cartitem_count"/>
+        <result property="productCode" column="product_code"/>
+        <result property="productName" column="product_name"/>
+        <result property="productPrice" column="product_price"/>
+        <association property="suitbox" resultMap="SuitBoxResultMap"/>
+        <association property="productImageDTO" resultMap="productImageResultMap"/>
+    </resultMap>
+
+    <!-- ProductImageDTO Mapping -->
+    <resultMap id="productImageResultMap" type="com.ohgiraffers.dosirak.admin.product.dto.ProductImageDTO">
+        <result property="savedName" column="saved_name"/>
+        <result property="savePath" column="save_path"/>
+    </resultMap>
+
+    <!-- SuitBoxDTO Mapping -->
+    <resultMap id="SuitBoxResultMap" type="com.ohgiraffers.dosirak.user.suitBox.model.dto.SuitBoxDTO">
+        <id column="suitbox_code" property="suitboxCode" />
+        <result column="rice_code" property="riceCode" />
+        <result column="main_code" property="mainCode" />
+        <result column="side_code" property="sideCode" />
+        <result column="kimchi_code" property="kimchiCode" />
+    </resultMap>
+
+    <!-- OrderDTO Mapping -->
+    <resultMap id="orderResultMap" type="com.ohgiraffers.dosirak.admin.order.model.dto.OrderDTO">
+        <id property="orderCode" column="order_code"/>
+        <association property="pay" resultMap="payResultMap"/>
+    </resultMap>
+
+    <!-- PayDTO Mapping -->
+    <resultMap id="payResultMap" type="com.ohgiraffers.dosirak.admin.order.model.dto.PayDTO">
+        <result property="payDate" column="pay_date"/>
+        <result property="orderCode" column="order_code"/>
+    </resultMap>
+
+    <!-- 장바구니 조회 -->
+    <select id="userCartList" resultMap="CartResultMap">
+        SELECT
+            C.CARTITEM_COUNT,
+            P.PRODUCT_CODE,
+            P.PRODUCT_NAME,
+            P.PRODUCT_PRICE,
+            S.SUITBOX_CODE,
+            I.SAVE_PATH,
+            I.SAVED_NAME,
+            S.RICE_CODE,
+            S.MAIN_CODE,
+            S.SIDE_CODE,
+            S.KIMCHI_CODE
+        FROM
+            CART C
+        LEFT JOIN TBL_PRODUCT P ON C.PRODUCT_CODE = P.PRODUCT_CODE
+        LEFT JOIN PRODUCT_IMG I ON C.PRODUCT_CODE = I.PRODUCT_CODE
+        LEFT JOIN SUIT_BOX S ON C.SUITBOX_CODE = S.SUITBOX_CODE
+        WHERE C.ID = #{memberId}
+    </select>
+
+    <!-- 맞춤상품 메뉴이름 장바구니 조회 -->
+    <select id="getMenuByCode">
+        SELECT
+            MENU_CODE,
+            MENU_NAME,
+            MENU_CATEGORY,
+            MENU_EXTRACASH,
+            MENU_STATUS
+        FROM
+            MENU
+        WHERE MENU_CODE = #{menuCode}
+    </select>
+
+    <!-- 결제페이지 유저 정보 가져오기 -->
+    <select id="getPaymentByUserId" parameterType="string">
+        SELECT U.ID, U.NAME, U.PHONE, U.ADDRESS1, U.ADDRESS2, U.ADDRESS3
+        FROM USER U
+        WHERE U.ID = #{userId}
+    </select>
+
+    <!-- 일반상품 장바구니 조회 -->
+    <select id="getProductByCart" resultMap="CartResultMap" parameterType="hashMap">
+        SELECT
+            C.CARTITEM_COUNT,
+            P.PRODUCT_CODE,
+            P.PRODUCT_NAME,
+            P.PRODUCT_PRICE,
+            PI.SAVE_PATH
+        FROM
+            CART C
+        JOIN TBL_PRODUCT P ON C.PRODUCT_CODE = P.PRODUCT_CODE
+        JOIN PRODUCT_IMG PI ON P.PRODUCT_CODE = PI.PRODUCT_CODE
+        WHERE C.ID = #{userId} AND P.PRODUCT_CODE = #{productCode}
+    </select>
+
+    <!-- 맞춤상품 코드 가져오기 -->
+    <select id="getSuitboxCodeByCart" resultMap="CartResultMap" parameterType="hashMap">
+        SELECT
+            C.CARTITEM_COUNT,
+            S.SUITBOX_CODE,
+            S.RICE_CODE,
+            S.MAIN_CODE,
+            S.SIDE_CODE,
+            S.KIMCHI_CODE
+        FROM
+            CART C
+        JOIN SUIT_BOX S ON C.SUITBOX_CODE = S.SUITBOX_CODE
+        WHERE C.ID = #{userId} AND S.SUITBOX_CODE = #{suitboxCode}
+    </select>
+
+    <!-- 결제 후 ORDER 테이블에 INSERT -->
+    <insert id="userOrderDone">
+        INSERT INTO `ORDER` (ID, ORDER_RECIPIENT, ORDER_CONTACT, ORDER_ADDRESS1, ORDER_ADDRESS2, ORDER_ADDRESS3)
+        VALUES
+        (#{memberId}, #{name}, #{phone}, #{address1},#{address2},#{address3})
+    </insert>
+
+    <!-- 최근 주문코드 가져오기 -->
+    <select id="findOrderCode" resultType="string">
+        SELECT
+            ORDER_CODE
+        FROM
+            `ORDER`
+        ORDER BY ORDER_CODE DESC LIMIT 1
+    </select>
+
+    <!-- 주문코드의 결제날짜 가져오기 -->
+    <select id="findPayDate">
+        SELECT
+            P.PAY_DATE
+        FROM
+            PAY P
+        JOIN `ORDER` O ON P.ORDER_CODE = O.ORDER_CODE
+        WHERE O.ORDER_CODE = #{orderCode}
+    </select>
+
+    <!-- 주문완료 후 맞춤상품, 수량 주문상세 테이블 INSERT -->
+    <insert id="insertDetailSuitbox">
+        INSERT INTO DETAIL (DETAILITEM_COUNT, SUITBOX_CODE, ORDER_CODE)
+        VALUES
+            (#{cartitemCount}, #{suitboxCode}, #{orderCode})
+    </insert>
+    <insert id="insertDetailSuitboxDirect">
+        INSERT INTO DETAIL (DETAILITEM_COUNT, SUITBOX_CODE, ORDER_CODE)
+        VALUES
+        (#{itemCount}, #{suitboxCode}, #{orderCode})
+    </insert>
+
+    <!-- 주문완료 후 일반상품, 수량 주문상세 테이블 INSERT -->
+    <insert id="insertDetailProduct">
+        INSERT INTO DETAIL (DETAILITEM_COUNT, PRODUCT_CODE, ORDER_CODE)
+        VALUES
+        (#{cartitemCount}, #{productCode}, #{orderCode})
+    </insert>
+
+    <!-- UserPayment Query-->
+<!--    <select id="userPayment" resultMap="CartResultMap">-->
+<!--        SELECT-->
+<!--            C.PRODUCT_CODE,-->
+<!--            C.CARTITEM_COUNT,-->
+<!--            P.PRODUCT_NAME,-->
+<!--            P.PRODUCT_PRICE,-->
+<!--            PI.SAVE_PATH,-->
+<!--            PI.SAVED_NAME,-->
+<!--            U.NAME,-->
+<!--            U.PHONE,-->
+<!--            U.ADDRESS1,-->
+<!--            U.ADDRESS2,-->
+<!--            U.ADDRESS3-->
+<!--        FROM-->
+<!--            CART C-->
+<!--        JOIN USER U ON C.ID = U.ID-->
+<!--        JOIN TBL_PRODUCT P ON C.PRODUCT_CODE = P.PRODUCT_CODE-->
+<!--        JOIN PRODUCT_IMG PI ON P.PRODUCT_CODE = PI.PRODUCT_CODE-->
+<!--        WHERE C.ID = #{cartList}-->
+<!--    </select>-->
+
+    <!-- CartUpdateQuantity Query -->
+    <update id="cartUpdateQuantity" parameterType="com.ohgiraffers.dosirak.user.order.model.dto.CartDTO">
+        UPDATE
+            CART
+        SET
+            CARTITEM_COUNT = #{updatedQuantity}
+        WHERE
+            PRODUCT_CODE = #{productCode}
+    </update>
+    <update id="cartUpdateQuantitySuitbox" parameterType="hashMap">
+        UPDATE
+            cart
+        SET
+            cartitem_count = #{cartitemCount}
+        WHERE
+            suitbox_code = #{suitboxCode}
+    </update>
+
+    <insert id="insertPay" parameterType="hashMap">
+        INSERT INTO PAY (ORDER_CODE, PAY_PRICE, PAY_DATE, PAY_STATUS, PAY_METHOD)
+        VALUES
+        (#{orderCode}, #{payPrice}, NOW(), #{payStatus}, #{payMethod})
+    </insert>
+
+    <insert id="insertDelivery">
+        INSERT INTO DELIVERY (ORDER_CODE)
+        VALUES
+        (#{orderCode})
+    </insert>
+
+    <!-- 맞춤상품 장바구니 삭제 -->
+    <delete id="deleteCartSuitbox">
+        DELETE FROM CART
+        WHERE id = #{memberId} AND suitbox_code = #{itemCode}
+    </delete>
+
+    <!-- 일반상품 장바구니 삭제-->
+    <delete id="deleteCartProduct">
+        DELETE FROM CART
+        WHERE id = #{memberId} AND product_code = #{itemCode}
+    </delete>
+
+    <delete id="cartDeleteProductList">
+        DELETE FROM CART
+        WHERE PRODUCT_CODE = #{productCode}
+    </delete>
+
+    <delete id="cartDeleteSuitboxList">
+        DELETE FROM CART
+        WHERE SUITBOX_CODE = #{suitboxCode}
+    </delete>
+    <select id="getProductImageDTOByProductId">
+        SELECT
+            img_code,
+            product_code,
+            saved_name,
+            save_path
+        FROM
+            PRODUCT_IMG
+        WHERE
+        product_code = #{productCode}
+        LIMIT 1;
+    </select>
+    <select id="setCartProductImgName">
+        SELECT
+            img_code,
+            product_code,
+            saved_name,
+            save_path
+        FROM
+            PRODUCT_IMG
+        WHERE
+        product_code = #{productCode}
+        LIMIT 1;
+    </select>
+</mapper>

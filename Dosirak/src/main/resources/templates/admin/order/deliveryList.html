@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="/admin/common/head.html"></th:block>
+</head>
+<body class="sb-nav-fixed">
+<th:block th:replace="/admin/common/header.html"></th:block>
+<!-- navbar -->
+<div id="layoutSidenav">
+    <th:block th:replace="/admin/common/sideNav.html"></th:block>
+    <!-- layoutSidenav_nav -->
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <h1 class="mt-4">배송 관리</h1>
+                <form id="searchForm" method="GET" action="/admin/deliveryList">
+                    <div class="card mb-4 mt-4">
+                        <div class="card-header justify-content-between d-flex align-items-center">
+                            <i class="fas fa-table me-1"></i>
+                            <div style="display: flex;">
+                                <label>
+                                    <select id="searchCondition" name="searchCondition" class="datatable-selector">
+                                        <option value="">배송상태 선택</option>
+                                        <option value="1">배송준비중</option>
+                                        <option value="2">배송중</option>
+                                        <option value="3">배송완료</option>
+                                        <option value="4">배송지연</option>
+                                    </select>
+                                </label>
+                                    <div class="input-group">
+<!--                                        <input id="searchValue" name="searchValue" class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />-->
+                                        <button class="btn btn-primary" id="btnNavbarSearch" type="submit"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table id="datatablesSimple">
+                                <thead>
+                                <tr>
+                                    <th>주문코드</th>
+                                    <th>운송장번호</th>
+                                    <th>배송상태</th>
+                                    <th>수령인</th>
+                                </tr>
+                                </thead>
+                                <tfoot>
+                                <tr>
+                                    <th>주문코드</th>
+                                    <th>운송장번호</th>
+                                    <th>배송상태</th>
+                                    <th>수령인</th>
+                                </tr>
+                                </tfoot>
+                                <tbody>
+                                <tr th:each="delivery : ${ deliveryList }">
+                                    <td>
+                                        <a th:href="@{'/admin/deliveryView?orderCode=' + ${ delivery.order.orderCode }}" th:text="${ delivery.order.orderCode }"></a>
+                                    </td>
+                                    <td th:text="${ delivery.deliveryCode }"></td>
+                                    <td th:text="${ delivery.deliveryStatus }"></td>
+                                    <td>
+                                        <span th:if="${ delivery.order.orderRecipient }" th:text="${ delivery.order.orderRecipient }"></span>
+                                        <span th:unless="${ delivery.order.orderRecipient }" th:text="${delivery.member.name}"></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+            </div>
+        </main>
+    </div>
+</div>
+<th:block th:replace="admin/common/foot.html"></th:block>
+<script>
+    window.addEventListener('DOMContentLoaded', event => {
+        // 데이터 테이블 초기화
+        const datatablesSimple = document.getElementById('datatablesSimple');
+        let dataTable;
+        if (datatablesSimple) {
+            // 검색 기능을 활성화하여 테이블을 초기화합니다.
+            dataTable = new simpleDatatables.DataTable(datatablesSimple, {
+                searchable: true,
+            });
+        }
+
+        // 검색 입력 필드를 선택합니다.
+        const searchInput = document.getElementById('searchValue');
+
+        // 검색 입력 필드가 존재하는 경우에만 이벤트를 추가합니다.
+        if (searchInput) {
+            // 검색 입력 필드의 입력 이벤트를 감지하여 엔터 키가 입력되었을 때 검색을 실행합니다.
+            searchInput.addEventListener('keyup', function (event) {
+                if (event.key === 'Enter') {
+                    // 엔터 키가 입력되었을 때 검색어를 가져와 데이터 테이블에 적용합니다.
+                    const searchValue = searchInput.value;
+                    if (dataTable) {
+                        dataTable.search(searchValue);
+                    }
+                }
+            });
+        }
+    });
+</script>
+<script>
+    // 페이지가 새로고침되었을 때 실행될 함수
+    function checkForRefresh() {
+        if (performance.navigation.type === 1) {
+            // 1은 페이지 새로고침을 나타냅니다.
+            // 페이지가 새로고침된 경우, 첫 페이지로 리다이렉트합니다.
+            window.location.href = 'http://localhost:8080/admin/deliveryList';
+        }
+    }
+
+    // 페이지 로드 시 checkForRefresh 함수를 실행합니다.
+    window.onload = checkForRefresh;
+</script>
+</body>
+</html>

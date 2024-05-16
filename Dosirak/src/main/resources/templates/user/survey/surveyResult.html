@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <th:block th:replace="/user/common/head.html"></th:block>
+    <link rel="stylesheet" href="/user/css/survey.css">
+</head>
+
+<body>
+<div class="ly_all bl_all">
+    <th:block th:replace="/user/common/header.html"></th:block>
+<div class="ly_midWD ly_inner02"> <!-- 결과창 -->
+    <div class="result-main-layout">
+        <div class="name-block">
+            <span th:text="${userInfo.name}"></span>님의 설문 결과
+        </div>
+        <div class="result-block">
+            <div class="result-flex-block">
+                <div class="half-info-box" th:text="|${userInfo.gender}성|"></div>
+                <div class="half-info-box" th:text="|${surveyResult.surveyAge}세|"></div>
+            </div>
+            <div class="result-flex-block">
+                <div class="half-info-box" th:text="|${surveyResult.surveyHeight}cm/${surveyResult.surveyWeight}kg|"></div>
+                <div class="half-info-box" th:text="|BMI: ${surveyResult.surveyBmi}|"></div>
+            </div>
+            <div class="result-info-box" th:if="${surveyResult.surveyDiet == 'normal'}">희망 식단: 일반식</div>
+            <div class="result-info-box" th:if="${surveyResult.surveyDiet == 'diet'}">희망 식단: 체중 감량</div>
+            <div class="result-info-box" th:if="${surveyResult.surveyDiet == 'protein'}">희망 식단: 고단백식</div>
+            <button class="el_btnPointBack fix-info-button" th:onclick="|location.href='/survey/info-modify'|">기본 정보 수정</button>
+        </div>
+        <div class="result-block">
+            <dl class="" style="position:relative;">
+                <dt class=""
+                    style="background:#fff;padding:15px 0;font-size:18px;border-radius:10px;border-bottom-left-radius:0;border-bottom-right-radius:0;">
+                        <span id="balanceComment"></span><br>
+                        <span id="absComment"></span>
+                </dt>
+                <div style="background-color: white; width: auto">
+                <div style="display: flex;width: 80%;margin-left: auto;margin-right: auto;"id="nutritionBar">
+                    <div id="carboBar" style="background-color: #8CDA94; border-bottom-left-radius: 50px;border-top-left-radius: 50px;height: 20px;text-align: left;padding-left: 10px;"></div>
+                    <div id="proteinBar" style="background-color: #63F4EC;height: 20px;text-align: left;padding-left: 10px;"></div>
+                    <div id="fatBar" style="background-color: #F8FA93; border-bottom-right-radius: 50px;border-top-right-radius: 50px;height: 20px;text-align: left;padding-left: 10px;"></div>
+                </div>
+                    <div style="position: relative;">
+                        <div style="position: absolute; top: 10%; right: 10%;display: none" id="compareDiv"><span id="compareNutrition">섭취 탄수화물</span></div>
+                        <div style="margin-left: 12%; display: flex; position: relative; z-index: 0;">
+                            <div style="width: 14px; height: 14px; margin-top: 5px; background-color: #8CDA94;"></div>탄수화물
+                        </div>
+                        <div style="margin-left: 12%; display: flex; position: relative; z-index: 0;">
+                            <div style="width: 14px; height: 14px; margin-top: 5px; background-color: #63F4EC;"></div>단백질
+                        </div>
+                        <div style="margin-left: 12%; display: flex; position: relative; z-index: 0;">
+                            <div style="width: 14px; height: 14px; margin-top: 5px;margin-bottom: 10px; background-color: #F8FA93;"></div>지방
+                        </div>
+                    </div>
+
+                    <dd class=""
+                    th:style="'background:url(' + @{/user/img/survey/surveyResultNutrition.jpg} + ') no-repeat center/cover;padding:30px 0;border-radius:10px;border-top-left-radius:0;border-top-right-radius:0;min-height:200px;opacity:0.4;'">
+                </dd>
+                <dd class="" style="position:absolute;
+                    top:50%;
+                    left:50%;
+                    transform:translateX(-50%);
+                    width:80%;
+                    font-size: 20px;" id="mainComment"></dd>
+                </div>
+            </dl>
+        </div>
+        <div class="result-block">
+            <dl class="" style="position:relative;">
+                <dt id="workoutComment" class="" style="background:#fff;padding:15px 0;font-size:18px;border-radius:10px;border-bottom-left-radius:0;border-bottom-right-radius:0;">
+                </dt>
+                <dd class="" th:style="'background:url(' + @{/user/img/survey/surveyResultWorkout.jpg} + ') no-repeat center/cover;padding:30px 0;border-radius:10px;border-top-left-radius:0;border-top-right-radius:0;min-height:200px;opacity:0.4;'">></dd>
+                <dd id="workoutDetailComment" class="" style="position:absolute;
+                        top:35%;
+                        left:50%;
+                        transform:translateX(-50%);
+                        width:80%;
+                        font-size: 20px"></dd>
+            </dl>
+        </div>
+        <button class="el_btnPointBack fix-info-button" th:onclick="|location.href='/survey/delete'|">설문 삭제</button>
+    </div>
+</div>
+    <th:block th:replace="/user/common/footer.html"></th:block>
+</div>
+
+<script th:inline="javascript">
+    const surveyResult = [[${surveyResult}]]
+    console.log(surveyResult)
+    const carboScore = surveyResult.surveyCarboScore
+    const proteinScore = surveyResult.surveyProteinScore
+    const fatScore = surveyResult.surveyFatScore
+    const weight = surveyResult.surveyWeight
+    const height = surveyResult.surveyHeight
+    const age = surveyResult.surveyAge
+    const gender = [[${userInfo.gender}]]
+
+    const recommendedCalory = absRecommendedCaloryCalculator(weight, height, age, gender)   //하루 권장 칼로리 계산
+
+    const absCarbo = absNutritionCalculator(recommendedCalory, carboScore, "C")
+    const absProtein = absNutritionCalculator(recommendedCalory, proteinScore, "P")
+    const absFat = absNutritionCalculator(recommendedCalory, fatScore, "F")
+
+    let percentageCarbo
+    let percentageProtein
+    let percentageFat
+    setNutritionBar(absCarbo, absProtein, absFat)
+    setNutritionComment(recommendedCalory, absCarbo, absProtein, absFat, percentageCarbo, percentageProtein, percentageFat)
+    setNutritionDetailView(recommendedCalory, absCarbo, absProtein, absFat, percentageCarbo, percentageProtein, percentageFat)
+
+
+
+    function absRecommendedCaloryCalculator(weight, height, age, gender){
+        let absCalory = 0
+        if(gender == '남'){
+            absCalory = (66.47 + (13.75 * weight) + (5 * height) - (6.76 * age)) * 1.2
+        } else {
+            absCalory = (655.1 + (9.56 * weight) + (1.85 * height) - (4.68 * age)) * 1.2
+        }
+        return absCalory
+    }
+
+    function absNutritionCalculator(calory, score, nutrition){
+        let result = 0;
+        if(nutrition == "F"){
+            result = calory * replaceScoreToRatio(score) / 9 * 0.2
+            console.log(result)
+        } else {
+            result = calory * replaceScoreToRatio(score) / 4 *0.4
+        }
+        return result
+    }
+
+    function replaceScoreToRatio(score){
+        let result = 0;
+        switch (score){
+            case 1: result = 0.2; break;
+            case 2: result = 0.7; break;
+            case 3: result = 0.9; break;
+            case 4: result = 1.2; break;
+            case 5: result = 1.4; break;
+        }
+        return result;
+    }
+
+    function setNutritionBar(absCarbo, absProtein, absFat){
+        percentageCarbo = Math.round(((absCarbo * 4)/(absCarbo * 4 + absProtein * 4 + absFat * 9)) * 100)
+        percentageProtein = Math.round(((absProtein * 4)/(absCarbo * 4 + absProtein * 4 + absFat * 9)) * 100)
+        percentageFat = 100 - percentageCarbo - percentageProtein
+
+        const $carboBar = document.querySelector('#carboBar')
+        const $proteinBar = document.querySelector('#proteinBar')
+        const $fatBar = document.querySelector('#fatBar')
+
+        $carboBar.style.width = percentageCarbo+'%'
+        $proteinBar.style.width = percentageProtein+'%'
+        $fatBar.style.width = percentageFat+'%'
+    }
+
+    function setNutritionComment(recommendedCalory, absCarbo, absProtein, absFat, percentageCarbo, percentageProtein, percentageFat){
+        let balance = 0;
+        let caloryScore = 0;    // 0이면 부족 1이면 조금 부족 2면 적당 3이면 조금많음 4면 많음
+        const $absComment = document.querySelector('#absComment')
+        const $balanceComment = document.querySelector('#balanceComment')
+        const $mainComment = document.querySelector('#mainComment')
+
+        let absText = "영양소의 총량이 매우 적어요"
+        let balanceTest = ""
+        let mainText = ""
+
+        const calory = absCarbo * 4 + absProtein * 4 + absFat * 9
+        if(percentageCarbo < 50 && percentageCarbo > 30 &&
+        percentageProtein < 50 && percentageProtein > 30 &&
+        percentageFat < 30 && percentageFat > 10){
+            balance = 1
+            balanceTest = "영양소의 균형이 좋고,"
+        } else {
+            balanceTest = "영양소의 균형이 좋지 않고,"
+        }
+        if(recommendedCalory + 700 < calory){
+            caloryScore = 4
+            absText = "총량이 너무 많아요."
+        } else if(recommendedCalory + 400 < calory){
+            caloryScore = 3
+            absText="총량이 조금 많아요."
+        } else if(recommendedCalory - 200 < calory){
+            caloryScore = 2
+            absText = "총량이 적당해요."
+        } else if(recommendedCalory - 600 < calory){
+            caloryScore = 1
+            absText = "총량이 조금 적어요."
+        }
+
+        if(balance == 1 && caloryScore > 0 && caloryScore < 4){
+            mainText = "<br>섭취 영양소의 칼로리와 균형이 적당해요. <br>이 식습관을 유지할 수 있도록 노력해보세요.<br>이제 설문 결과를 바탕으로 <br>영양성분을 비교할 수 있어요!"
+        } else if (caloryScore > 0 && caloryScore < 4){
+            mainText = "균형이 깨진 식단은 몸의 균형을 깨뜨립니다.<br>음식을 먹을때 영양소의 균형을 고려하는<br>식습관을 들여보세요.<br>이제 설문 결과를 바탕으로 <br>영양성분을 비교할 수 있어요!"
+        } else if(balance == 1 && caloryScore == 0){
+            mainText = "균형이 깨진 식단은 몸의 균형을 깨뜨립니다.<br>음식을 먹을때 영양소의 균형을 고려하는<br>식습관을 들여보세요.<br>이제 설문 결과를 바탕으로 <br>영양성분을 비교할 수 있어요!"
+        } else if(balance == 1 && caloryScore == 4){
+            mainText = "대사량 이상의 칼로리는<br>살을 찌우고 염증 수치를 높힙니다.<br>음식을 먹을때 영양소의 균형과<br>칼로리를 고려하는 습관을 들여보세요.<br>이제 설문 결과를 바탕으로 <br>영양성분을 비교할 수 있어요!"
+        } else if(caloryScore == 0){
+            mainText = "너무 적은 영양소의 섭취는<br>몸의 대사를 망치게 됩니다.<br>좀 더 건강한 식습관을 들여보세요."
+        } else if(caloryScore == 4){
+            mainText = "대사량 이상의 칼로리, 균형이 깨진 식단은<br>살을 찌우고 염증 수치를 높힙니다.<br>음식을 먹을때 영양소의 균형과<br>칼로리를 고려하는 습관을 들여보세요.<br>이제 설문 결과를 바탕으로 <br>영양성분을 비교할 수 있어요!"
+        }
+        $mainComment.innerHTML = mainText
+        $absComment.textContent = absText
+        $balanceComment.textContent = balanceTest
+    }
+    function setNutritionDetailView(recommendedCalory, absCarbo, absProtein, absFat, percentageCarbo, percentageProtein, percentageFat){
+        const $compareDiv = document.querySelector('#compareDiv')
+        const $compareSpan = document.querySelector('#compareNutrition')
+        const recommendCarbo = Math.round(recommendedCalory*0.4/4)
+        const recommendProtein = Math.round(recommendedCalory*0.4/4)
+        const recommendFat = Math.round(recommendedCalory*0.2/9)
+
+        const $carboBar = document.querySelector('#carboBar')
+        const $proteinBar = document.querySelector('#proteinBar')
+        const $fatBar = document.querySelector('#fatBar')
+        const $nutritionBar = document.querySelector('#nutritionBar')
+        $carboBar.addEventListener('mouseover',()=>{
+            $compareSpan.innerHTML = `섭취 탄수화물 ${Math.round(absCarbo)}g/${percentageCarbo}% / 권장 탄수화물 ${recommendCarbo}g/40%`
+            $compareDiv.style.display = ""
+        })
+        $proteinBar.addEventListener('mouseover',(event)=>{
+            $compareSpan.innerHTML = `섭취 단백질 ${Math.round(absProtein)}g/${percentageProtein}% / 권장 단백질 ${recommendProtein}g/40%`
+            $compareDiv.style.display = ""
+        })
+        $fatBar.addEventListener('mouseover',(event)=>{
+            $compareSpan.innerHTML = `섭취 지방 ${Math.round(absFat)}g/${percentageFat}% / 권장 지방 ${recommendFat}g/20%`
+            $compareDiv.style.display = ""
+        })
+        $nutritionBar.addEventListener('mouseout',()=>{
+            $compareDiv.style.display = "none"
+        })
+    }
+    setWorkoutComment(surveyResult)
+    function setWorkoutComment(surveyResult){
+        const workoutScore = surveyResult.surveyWorkoutScore
+        const $workoutComment = document.querySelector('#workoutComment')
+        const $workoutDetailComment = document.querySelector('#workoutDetailComment')
+        let commentText = ""
+        let detailText = ""
+        switch (workoutScore){
+            case 1: commentText = `운동량이 매우 적어요!`; detailText=`규칙적인 운동은 심장을 튼튼하게 하여<br>심장병과 성인병을 예방해 줄 수 있어요.<br><br>규칙적인 운동을 하는 습관을 길러보세요.`
+            case 2: commentText = `운동량이 적은 편이에요!`; detailText=`규칙적인 운동은 심장을 튼튼하게 하여<br>심장병과 성인병을 예방해 줄 수 있어요.<br><br>규칙적인 운동을 하는 습관을 길러보세요.`
+            case 3: commentText = `운동량이 살짝 적은 편이에요!`; detailText=`규칙적인 운동은 심장을 튼튼하게 하여<br>심장병과 성인병을 예방해 줄 수 있어요.<br><br>규칙적인 운동을 하는 습관을 길러보세요.`
+            case 4: commentText = `운동량이 적당한 편이에요!`; detailText=`규칙적인 운동은 심장을 튼튼하게 하여<br>심장병과 성인병을 예방해 줄 수 있어요.<br><br>현재 습관을 유지해보세요.`
+            case 5: commentText = `운동량이 많은 편이에요!`; detailText=`규칙적인 운동은 심장을 튼튼하게 하여<br>심장병과 성인병을 예방해 줄 수 있어요.<br><br>현재 습관을 유지해보세요.`
+        }
+        $workoutComment.textContent = commentText
+        $workoutDetailComment.innerHTML = detailText
+    }
+
+
+</script>
+</body>
+
+</html>

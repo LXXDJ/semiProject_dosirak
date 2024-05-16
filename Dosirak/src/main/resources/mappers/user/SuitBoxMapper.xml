@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ohgiraffers.dosirak.user.suitBox.model.dao.SuitBoxMapper">
+    <select id="selectSaleMenu" resultType="com.ohgiraffers.dosirak.admin.suitBox.model.dto.SuitBoxMenuDTO">
+        SELECT * FROM MENU WHERE menu_status = 'Y' or menu_status = 'S' ORDER BY menu_status, menu_name
+    </select>
+    <select id="checkSuitBoxBySuitBox">
+        SELECT SUITBOX_CODE
+        FROM SUIT_BOX
+        WHERE RICE_CODE = #{riceCode}
+        AND MAIN_CODE = #{mainCode}
+        AND SIDE_CODE = #{sideCode}
+        AND KIMCHI_CODE = #{kimchiCode}
+    </select>
+    <insert id="insertSuitBoxBySuitBox">
+        INSERT INTO SUIT_BOX (RICE_CODE, MAIN_CODE, SIDE_CODE, KIMCHI_CODE)
+        VALUES (#{riceCode}, #{mainCode}, #{sideCode}, #{kimchiCode})
+    </insert>
+    <select id="checkSuitBoxCode">
+        SELECT SUITBOX_CODE
+        FROM SUIT_BOX
+        WHERE RICE_CODE = #{riceCode}
+        AND MAIN_CODE = #{mainCode}
+        AND SIDE_CODE = #{sideCode}
+        AND KIMCHI_CODE = #{kimchiCode}
+    </select>
+    <select id="checkCartBySuitBox">
+        SELECT CARTITEM_COUNT
+        FROM CART
+        WHERE id = #{userId}
+        AND suitbox_code = #{suitboxCode}
+    </select>
+    <insert id="insertCartBySuitBox">
+        INSERT INTO CART
+        (CARTITEM_COUNT, ID, SUITBOX_CODE)
+        VALUES
+        (#{quantity}, #{userId}, #{suitboxCode})
+    </insert>
+    <update id="updateCartBySuitBox">
+        UPDATE CART
+        SET CARTITEM_COUNT = #{quantity}
+        WHERE ID = #{userId}
+        AND SUITBOX_CODE = #{suitboxCode}
+    </update>
+    <select id="getMenuByMenuCode">
+        SELECT *
+        FROM MENU
+        WHERE MENU_CODE = #{menuCode}
+    </select>
+    <select id="getPaymentByUserId" parameterType="string">
+        SELECT id, name, PHONE, ADDRESS1, ADDRESS2, ADDRESS3
+        FROM USER
+        WHERE ID = #{userId}
+    </select>
+    <select id="getSurveyResultByUserId">
+        SELECT
+        user_id,
+        survey_age,
+        survey_height,
+        survey_weight,
+        survey_bmi,
+        survey_diet,
+        survey_workout_score,
+        survey_carbo_score,
+        survey_protein_score,
+        survey_fat_score,
+        survey_diabetes,
+        survey_cancer,
+        survey_kidney,
+        survey_blood,
+        survey_date
+        FROM survey_result
+        WHERE user_id = #{userId}
+    </select>
+    <select id="getUserGenderByUserId">
+        SELECT GENDER
+        FROM `USER`
+        WHERE ID = #{userId}
+    </select>
+    <select id="getSuitBoxCodeBySuitBox">
+        SELECT SUITBOX_CODE
+        FROM SUIT_BOX
+        WHERE RICE_CODE = #{riceCode}
+        AND MAIN_CODE = #{mainCode}
+        AND SIDE_CODE = #{sideCode}
+        AND KIMCHI_CODE = #{kimchiCode}
+    </select>
+</mapper>

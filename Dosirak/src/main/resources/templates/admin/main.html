@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <th:block th:replace="/admin/common/head.html"></th:block>
+    <script>
+        // 현재 기준 일주일 날짜 배열로 담기
+        const today = new Date();
+        const week = [];
+        for(let i=6; i>=0; i--){
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const formattedDate = `${month}/${day}`;
+            week.push(formattedDate);
+        }
+
+        // db에서 받아온 데이터 날짜별로 매칭시켜서 배열 만들기
+        const joinDataString = '[[${joinCount}]]';
+        let joinWeekValue = [];
+        if(!joinDataString) joinWeekValue = new Array(7).fill(0);
+        else{
+            const joinData = processData(joinDataString, 'JOINDATE', 'COUNT');
+            const joinDates = joinData.formatDates;
+            const joinValues = joinData.values;
+
+            week.forEach(date => {
+                const index = joinDates.indexOf(date);
+                if(index != -1) joinWeekValue.push(joinValues[index]);
+                else joinWeekValue.push(0);
+            })
+        }
+
+        const profitDataString = '[[${perProfit}]]';
+        let profitWeekValue = [];
+        if(!profitDataString) profitWeekValue = new Array(7).fill(0);
+        else{
+            const profitData = processData(profitDataString, 'PAY_DATE', 'PAY_PRICE');
+            const profitDates = profitData.formatDates;
+            const profitValues = profitData.values;
+
+            week.forEach(date => {
+                const index = profitDates.indexOf(date);
+                if(index != -1) profitWeekValue.push(profitValues[index]);
+                else profitWeekValue.push(0);
+            })
+        }
+
+        function processData(dataString, dateKey, valueKey) {
+            const dates = [];
+            const values = [];
+            const entries = dataString.slice(2, -2).split('}, {');
+            entries.forEach(entry => {
+                const parts = entry.split(', ');
+                const entryData = {};
+                parts.forEach(part => {
+                    const [key, value] = part.split('=');
+                    entryData[key] = value;
+                });
+                dates.push(entryData[dateKey]);
+                values.push(entryData[valueKey]);
+            });
+            const formatDates = dates.map(date => date.split('-').slice(1).join('/'));
+            return { formatDates, values };
+        }
+
+        $(function(){
+            const elements = {joinNum:".joinNum", profit:".profit", reviewNum:".reviewNum", askNum:".askNum"};
+            const data = [
+                {name:"joinNum", value:'[[${joinNum}]]'},
+                {name:"profit", value:'[[${profit}]]'},
+                {name:"reviewNum", value:'[[${reviewNum}]]'},
+                {name:"askNum", value:'[[${askNum}]]'}
+            ];
+
+            data.forEach(item => {
+                let value = item.value;
+                if (value === "") value = "null";
+                else value = value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ",");
+                document.querySelector(elements[item.name]).textContent = value;
+            });
+        })
+    </script>
+</head>
+<body class="sb-nav-fixed">
+    <th:block th:replace="/admin/common/header.html"></th:block>
+    <div id="layoutSidenav">
+        <th:block th:replace="/admin/common/sideNav.html"></th:block>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">현황</h1>
+                    <ol class="breadcrumb mb-4">
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card bg-primary text-white mb-4">
+                                <div class="card-body">총 회원수 : <span class="joinNum"></span> 명</div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="/admin/member/memberList">View Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card bg-warning text-white mb-4">
+                                <div class="card-body">총 매출 : <span class="profit"></span> 원</div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="/admin/orderList">View Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card bg-success text-white mb-4">
+                                <div class="card-body">총 리뷰수 : <span class="reviewNum"></span> 개</div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="/admin/review/reviewList">View Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="card bg-danger text-white mb-4">
+                                <div class="card-body">총 문의수 : <span class="askNum"></span> 개</div>
+                                <div class="card-footer d-flex align-items-center justify-content-between">
+                                    <a class="small text-white stretched-link" href="/admin/customer/askList">View Details</a>
+                                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-area me-1"></i>
+                                    회원가입 추이
+                                </div>
+                                <div class="card-body"><canvas id="myAreaChart" width="100%" height="40"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <i class="fas fa-chart-bar me-1"></i>
+                                    매출 추이
+                                </div>
+                                <div class="card-body"><canvas id="myBarChart" width="100%" height="40"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-table me-1"></i>
+                            결제 현황
+                        </div>
+                        <div class="card-body">
+                            <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>주문코드</th>
+                                        <th>주문상태</th>
+                                        <th>아이디</th>
+                                        <th>결제금액</th>
+                                        <th>결제날짜</th>
+                                    </tr>
+                                </thead>
+                                <tfoot>
+                                    <tr>
+                                        <th>주문코드</th>
+                                        <th>주문상태</th>
+                                        <th>아이디</th>
+                                        <th>결제금액</th>
+                                        <th>결제날짜</th>
+                                    </tr>
+                                </tfoot>
+                                <tbody>
+                                    <tr th:each = "pay : ${recentOrderList}">
+                                        <td th:text="${pay.ORDER_CODE}"></td>
+                                        <td>
+                                            <th:block th:if="${ pay.ORDER_STATUS == 'O'}">주문완료</th:block>
+                                            <th:block th:if="${ pay.ORDER_STATUS == 'C'}">구매확정</th:block>
+                                            <th:block th:if="${ pay.ORDER_STATUS == 'X'}">주문취소</th:block>
+                                        </td>
+                                        <td th:text="${pay.ID}"></td>
+                                        <td th:text="${pay.PAY_PRICE}"></td>
+                                        <td th:text="${pay.PAY_DATE}"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="/admin/js/scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    <script src="/admin/assets/demo/chart-area-demo.js"></script>
+    <script src="/admin/assets/demo/chart-bar-demo.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+    <script src="/admin/js/datatables-simple-demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <th:block th:replace="/user/common/head.html"></th:block>
+</head>
+<body>
+<div class="ly_all bl_all">
+    <th:block th:replace="/user/common/header.html"></th:block>
+
+    <div class="bl_sideMenuBack">
+        <div class="ly_maxWD ly_flex">
+            <section class="bl_sideMenu">
+            </section>
+            <div class="ly_inner02 ly_fgrow1 hp_fBack">
+                <h2 class="el_lv1Head">주문내역</h2>
+                <table class="bl_TBView hp_mt50">
+                    <caption class="WA">검색</caption>
+                    <colgroup>
+                        <col style="width:150px"/>
+                        <col style="width:*"/>
+                        <col style="width:150px"/>
+                        <col style="width:*"/>
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <th scope="row">주문코드</th>
+                        <td th:each="order : ${order}" th:text="${order.orderCode}"></td>
+                        <th scope="row">주문상태 / 배송상태</th>
+                        <td th:each="order : ${order}" th:text="${order.orderStatus+'/'+order.deliveryStatus}"></td>
+                        <!-- 주문취소한 주문내역일때 -->
+                        <!-- <th scope="row">환불상태</th>
+                        <td>환불대기</td> -->
+                    </tr>
+                    <tr>
+                        <th scope="row">결제금액</th>
+                        <td class="js_paymentAmount" th:each="order : ${order}" th:text="${order.payPrice}"></td>
+                        <th scope="row">결제날짜</th>
+                        <td th:each="order : ${order}" th:text="${order.payDate}"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row">결제방법</th>
+                        <td colspan="3">카카오페이</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" >주문상세</th>
+                        <td colspan="3" th:each="order : ${order}" th:text="${order.productName}">
+                            <div class="bl_orderView ly_flex">
+                                <!-- 주문취소한 주문내역일때는 체크박스 비활성화 또는 표시X -->
+                                <ul class="bl_orderViewList ly_fgrow1">
+                                    <!-- 주문 항목들 -->
+                                </ul>
+                                <!-- 리스트의 버튼과 동일하게 동작 -->
+                                <!-- 주문취소한 주문내역일때는 버튼 표시X -->
+                                <div class="bl_orderView__btnZip">
+                                    <!-- 주문 취소, 환불 신청, 구매 확정, 리뷰 등록 버튼 -->
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">수령인</th>
+                        <td th:each="order : ${order}" th:text="${order.name}"></td>
+                        <th scope="row">연락처</th>
+                        <td th:each="order : ${order}" th:text="${order.phone}"></td>
+                    </tr>
+                    <tr th:each="order : ${order}">
+                        <th scope="row">주소</th>
+                        <td colspan="3" th:text="${order.orderAddress1 + ', ' + order.orderAddress2 + ', ' + order.orderAddress3}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <ul class="ly_flexC hp_mt70">
+                    <li><a class="el_btnM hp_br5 el_btn8Back" href="">목록</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <th:block th:replace="/user/common/footer.html"></th:block>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function(){
+        // 주문 내역의 결제금액 계산 및 업데이트
+        updatePaymentAmount();
+
+        function updatePaymentAmount() {
+            $('.js_paymentAmount').each(function () {
+                let orderIndex = $(this).index();
+                let productPrice = parseInt($('.js_productPrice').eq(orderIndex).text());
+                let detailItemCount = parseInt($('.js_detailItemCount').eq(orderIndex).text());
+                $(this).text(productPrice * detailItemCount);
+            });
+        }
+    });
+</script>
+</body>
+</html>

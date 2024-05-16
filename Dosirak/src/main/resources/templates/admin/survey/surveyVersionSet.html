@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <th:block th:replace="/admin/common/head.html"></th:block>
+    <link href="/admin/css/datatable.css" rel="stylesheet">
+    <script defer src="/admin/js/survey/surveyQuestionTable.js"></script>
+</head>
+
+<body class="sb-nav-fixed">
+<th:block th:replace="/admin/common/header.html"></th:block>
+<div id="layoutSidenav">
+    <th:block th:replace="/admin/common/sideNav.html"></th:block>
+    <div id="layoutSidenav_content">
+        <main>
+            <div class="container-fluid px-4">
+                <h1 class="mt-4" th:text="|version.${version.versionId}|"></h1>
+                <form id="versionSet">
+                    <table class="datatable-table mt-4">
+                        <input style="display: none" th:value="${version.versionId}" name="versionId">
+                        <tr>
+                            <th scope="row" style="width: 10%">버전 별칭</th>
+                            <td style="width: 15%"><input th:value="${version.versionName}" name="versionName">
+                            </td>
+                            <th scope="row" style="width: 10%">한줄 설명</th>
+                            <td><input style="width: 70%" th:value="${version.versionExplain}"
+                                       name="versionExplain"></td>
+                        </tr>
+                    </table>
+                </form>
+                <button id="insertQuestion">질문 추가하기</button>
+
+                <table class="datatable">
+                    <thead>
+                    <tr>
+                        <th style="width: 10%" class="orderText">질문 번호</th>
+                        <th style="width: 10%">영양소/점수</th>
+                        <th>질문/답변 내용</th>
+                    </tr>
+                    </thead>
+
+                </table>
+                <div id="orderDiv">
+                    <div class="questionDiv" th:each="question:${questionList}">
+                        <form class="question">
+                            <input style="display: none" name="questionOrder" class="questionOrder"
+                                   th:value="${question.questionOrder}">
+                            <input style="display: none" name="questionId" class="questionId"
+                                   th:value="${question.questionId}">
+                            <input style="display: none" name="versionId" value="${versionId}"
+                                   th:value="${question.versionId}">
+                            <table class="datatable">
+                                <tr>
+                                    <td class="orderText"
+                                        style="width: 10%">1
+                                    </td>
+                                    <td style="width: 10%">
+                                        <select name="questionCategory" onchange="setMaxScore()">
+                                            <option th:selected="${question.questionCategory}=='C'" value="C">
+                                                탄수화물
+                                            </option>
+                                            <option th:selected="${question.questionCategory}=='P'" value="P">
+                                                단백질
+                                            </option>
+                                            <option th:selected="${question.questionCategory}=='F'" value="F">지방
+                                            </option>
+                                            <option th:selected="${question.questionCategory}=='W'" value="W">운동
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td style="border-right: none">
+                                        <input name="questionText"
+                                               style="width: 700px" th:value="${question.questionText}">
+                                    </td>
+                                    <td style="border-left: none; width: 800px;">
+                                        <button type="button" style="margin-left: 20px"
+                                                class="insertAnswerButton"
+                                                onclick="insertAnswer(event)">답변 추가
+                                        </button>
+                                        <button type="button" style="margin-left: 20px" onclick="deleteQuestion(event)"
+                                                class="deleteQuestionButton">질문 삭제
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                        <div>
+                            <form class="answer" th:each="answer:${question.answerList}" th:if="${answer.answerId != 0}">
+                                <input style="display: none" name="answerId" th:value="${answer.answerId}">
+                                <input style="display: none" name="questionId" th:value="${question.questionId}">
+                                <table class="datatable">
+                                    <tr>
+                                        <td style="width: 10%"></td>
+                                        <td style="width: 10%"><input name="answerValue" style="width: 50px;" th:value="${answer.answerValue}" onchange="setMaxScore()"></td>
+                                        <td style="border-right: none"><input name="answerText" style="width: 500px;" th:value="${answer.answerText}">
+                                        </td>
+                                        <td style="border-left: none; width: 800px;">
+                                            <button type="button" onclick="deleteAnswer(event)"
+                                                    style="margin-left: 20px" class="deleteAnswer">답변 삭제
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <table class="datatable" style="margin-top: 50px;">
+                    <tr>
+                        <th style="width: 10%;">점수 분류</th>
+                        <th style="width: 18%;">매우 낮음</th>
+                        <th style="width: 18%;">낮음</th>
+                        <th style="width: 18%;">보통</th>
+                        <th style="width: 18%;">높음</th>
+                        <th style="width: 18%;">매우 높음</th>
+                    </tr>
+                    <tr th:each="range:${rangeList}">
+                        <form class="rangeForm">
+                            <input style="display: none" name="versionId" th:value="${version.versionId}">
+                            <input style="display: none" name="category" th:value="${range.category}">
+                        <th:block th:switch="${range.category}">
+                            <th:block th:case="C">
+                                <td>탄수화물</td>
+                            </th:block>
+                            <th:block th:case="P">
+                                <td>단백질</td>
+                            </th:block>
+                            <th:block th:case="F">
+                                <td>지방</td>
+                            </th:block>
+                            <th:block th:case="W">
+                                <td>운동</td>
+                            </th:block>
+                        </th:block>
+                        <td>1 ~
+                            <input name="range1" th:id="|${range.category}1|" th:value="${range.range1}" style="width: 30px; text-align: center" class="rangeInput">
+                        </td>
+                        <td>
+                            <span th:text="|${range.range1} ~ |" th:id="|${range.category}1t|"></span>
+
+                            <input name="range2" th:id="|${range.category}2|" th:value="${range.range2}" style="width: 30px; text-align: center" class="rangeInput">
+                        </td>
+                        <td>
+                            <span th:text="|${range.range2} ~ |" th:id="|${range.category}2t|"></span>
+                            <input name="range3" th:id="|${range.category}3|" th:value="${range.range3}" style="width: 30px; text-align: center" class="rangeInput">
+                        </td>
+                        <td>
+                            <span th:text="|${range.range3} ~ |" th:id="|${range.category}3t|"></span>
+                            <input name="range4" th:id="|${range.category}4|" th:value="${range.range4}" style="width: 30px; text-align: center" class="rangeInput">
+                        </td>
+                        <td>
+                            <span th:text="|${range.range4} ~ |" th:id="|${range.category}4t|"></span>
+                            <span th:id="|${range.category}5|">~ 10</span></td>
+                        </form>
+                    </tr>
+                </table>
+            <div class="editBtn" style="text-align: right; margin: 20px 0px 70px 0px;">
+                <span>
+                    <button type="button" class="btn btn-primary" id="modify">설문 수정</button>
+                    <button type="button" class="btn btn-primary" formaction="/admin/suit-box/menu/view"
+                            formmethod="get">설문 삭제</button>
+                    <button type="button" class="btn btn-secondary"
+                            onclick="window.location.href='/admin/survey/version-list'">목록</button>
+                </span>
+            </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+<th:block th:replace="/admin/common/foot.html"></th:block>
+<script>
+    const versionId = [[${version.versionId}]]
+
+    const $rangeFormList = document.querySelectorAll('.rangeForm')
+
+    const $modifyButton = document.querySelector('#modify') // 수정 버튼
+    $modifyButton.addEventListener('click', modify)
+
+    setQuestionOrderAndForm(); // text, orderInput value 할당
+
+    const $insertQuestion = document.querySelector('#insertQuestion') // 질문 추가 버튼
+    $insertQuestion.addEventListener('click', () => {
+        const $questionDivList = document.querySelectorAll('.questionDiv');
+        // 파라미터 value 저장해서 문자열 이어붙힌 뒤 innerHtml 적용시키기
+        const $orderDiv = document.querySelector('#orderDiv')
+        const $orderDivInputList = $orderDiv.querySelectorAll('input')
+        const $orderDivSelectList = $orderDiv.querySelectorAll('select')
+        $orderDiv.innerHTML += `<div class="questionDiv">
+                        <form class="question">
+                            <input style="display: none" name="questionOrder" class="questionOrder">
+                            <input style="display: none" name="versionId" value="${versionId}">
+                            <table class="datatable">
+                                <tr>
+                                    <td class="orderText"
+                                        style="width: 10%">1
+                                    </td>
+                                    <td style="width: 10%">
+                                        <select name="questionCategory" onchange="setMaxScore()">
+                                            <option value="C">
+                                                탄수화물
+                                            </option>
+                                            <option value="P">
+                                                단백질
+                                            </option>
+                                            <option value="F">지방
+                                            </option>
+                                            <option value="W">운동
+                                            </option>
+                                        </select>
+                                    </td>
+                                    <td style="border-right: none">
+                                        <input name="questionText"
+                                               style="width: 700px" value="질문을 입력해주세요.">
+                                    </td>
+                                    <td style="border-left: none; width: 800px;">
+                                        <button type="button" style="margin-left: 20px"
+                                                class="insertAnswerButton"
+                                                onclick="insertAnswer(event)">답변 추가
+                                        </button>
+                                        <button type="button" style="margin-left: 20px" onclick="deleteQuestion(event)"
+                                                class="deleteQuestionButton">질문 삭제
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </form>
+                        <div>
+                        </div>
+                    </div>`
+        //innerText
+        const $nowOrderDiv = document.querySelector('#orderDiv')
+        const $nowOrderInputList = $nowOrderDiv.querySelectorAll('input')
+        const $nowOrderSelectList = $nowOrderDiv.querySelectorAll('select')
+
+        for (let i = 0; i < $orderDivInputList.length; i++) {
+            $nowOrderInputList[i].value = $orderDivInputList[i].value
+        }
+        for (let i = 0; i < $orderDivSelectList.length; i++) {
+            $nowOrderSelectList[i].value = $orderDivSelectList[i].value
+        }
+        setQuestionOrderAndForm()
+    })
+
+    function setQuestionOrderAndForm() {
+        const $questionDivList = document.querySelectorAll('.questionDiv')
+        let order = 1;
+        $questionDivList.forEach($div => {
+            const text = $div.querySelector('.orderText')
+            const questionOrder = $div.querySelectorAll('.questionOrder')
+            questionOrder.forEach(orderQuestion=>orderQuestion.value = order)
+            text.textContent = order;
+            order++
+        })
+        setMaxScore()
+    }
+
+    function insertAnswer(event) {
+        const $div = event.target.parentElement.parentElement.parentElement.parentElement.parentElement.nextElementSibling;
+        const questionIdElement = $div.previousElementSibling.querySelector('.questionId');
+        const questionId = questionIdElement ? questionIdElement.value : 0;
+        const $divInputList = $div.querySelectorAll('input');
+        if ($div.querySelectorAll('form').length < 5) {
+            $div.innerHTML += `<form class="answer">
+            <input style="display: none" name="questionId" value="${questionId}"> <!-- 질문의 ID를 추가 -->
+            <table class="datatable">
+                <tr>
+                    <td style="width: 10%"></td>
+                    <td style="width: 10%"><input name="answerValue" style="width: 50px;" value="1" onchange="setMaxScore()"></td>
+                    <td style="border-right: none"><input name="answerText" style="width: 500px;" value="답변을 입력해주세요."></td>
+                    <td style="border-left: none; width: 800px;">
+                        <button type="button" onclick="deleteAnswer(event)" style="margin-left: 20px" class="deleteAnswer">답변 삭제</button>
+                    </td>
+                </tr>
+            </table>
+        </form>`;
+        }
+        const $nowDivInputList = event.target.parentElement.parentElement.parentElement.parentElement.parentElement.nextElementSibling.querySelectorAll('input');
+        for (let i = 0; i < $divInputList.length; i++) {
+            $nowDivInputList[i].value = $divInputList[i].value;
+        }
+        setMaxScore()
+    }
+
+
+    function deleteAnswer(event) {
+        const $answerForm = event.target.parentElement.parentElement.parentElement.parentElement.parentElement
+        $answerForm.remove();
+        setMaxScore()
+    }
+
+    function deleteQuestion(event) {
+        event.target.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.remove()   // questionDiv 제거
+        setQuestionOrderAndForm()
+    }
+
+    async function modify() {
+        const $questionDivList = document.querySelectorAll('.questionDiv')
+        const $versionSet = document.querySelector('#versionSet')
+        let response = await fetch('/admin/survey/fetch/version', {
+            method: 'POST',
+            body: new FormData($versionSet)
+        })
+        let responseJson = await response.json();
+        for (const $questionDiv of $questionDivList) {
+            const question = $questionDiv.querySelector('.question')
+            const answerLIst = $questionDiv.querySelectorAll('.answer')
+            response = await fetch('/admin/survey/fetch/question', {
+                method: 'POST',
+                body: new FormData(question)
+            })
+            const questionId = await response.json()
+            for (const answer of answerLIst) {
+                const fd = new FormData(answer)
+                if(fd.get('questionId') == 0){
+                    fd.set('questionId', questionId)
+                }
+                response = await fetch('/admin/survey/fetch/answer', {
+                    method: 'POST',
+                    body: fd
+                })
+                responseJson = await response.json()
+            }
+        }
+        for (const form of $rangeFormList) {
+            const rangeForm = new FormData(form)
+            response = await fetch('/admin/survey/fetch/range',{
+                method: 'POST',
+                body: rangeForm
+            })
+            response = await response
+        }
+        location.href=`/admin/survey/version-detail?versionId=${versionId}`
+    }
+    function getMaxScore(category){
+        const $questionDivList = document.querySelectorAll('.questionDiv')
+        let maxScore = 0;
+        $questionDivList.forEach(div=>{
+            let nowMaxScore = 0
+            if(div.querySelector(`select[name="questionCategory"]`).value == category){
+                const valueList = div.querySelectorAll('input[name="answerValue"]')
+                valueList.forEach(input=>{
+                    if(nowMaxScore < input.value){
+                        nowMaxScore = input.value
+                    }
+                })
+            }
+            maxScore += parseInt(nowMaxScore)
+        })
+        return maxScore;
+    }
+
+    function setMaxScore(){
+        let category = ['C', 'P', 'F', 'W']
+        category.forEach(cat=>{
+            const categoryMax = document.querySelector(`#${cat}5`)
+            categoryMax.textContent = getMaxScore(cat)
+        })
+    }
+    const $rangeInputs = document.querySelectorAll('.rangeInput')
+    $rangeInputs.forEach(input=>{
+        input.addEventListener('change',(event)=>{
+            const searchId = event.target.id + 't'
+            const text = document.querySelector(`#${searchId}`)
+            text.textContent = event.target.value
+        })
+    })
+
+</script>
+</body>
+
+</html>

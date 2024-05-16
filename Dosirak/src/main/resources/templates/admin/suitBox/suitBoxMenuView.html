@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <th:block th:replace="~{/admin/common/head.html}"></th:block>
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+        integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script defer src="/admin/js/suit-box/suitBox.mjs"></script>
+    <script defer type="module" src="/admin/js/suit-box/filter.mjs"></script>
+    <link href="/admin/css/datatable.css" rel="stylesheet">
+<script>
+    $("#datatablesSimple tbody tr").click(function(){
+        let txtId = $("td:nth-of-type(1)", this).text();
+        location.href = "/admin/member/managerView?id="+txtId;
+    })
+</script>
+</head>
+
+<body class="sb-nav-fixed">
+    <th:block th:replace="~{/admin/common/header.html}"></th:block>
+    <div id="layoutSidenav">
+        <th:block th:replace="~{/admin/common/sideNav.html}"></th:block>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    <h1 class="mt-4">맞춤도시락</h1>
+                    <div class="card mb-4 mt-4">
+                        <div class="card-header">
+                            <div class="justify-content-between d-flex align-items-center">
+                                <a class="btn btn-primary" href="/admin/suit-box/menu/set">메뉴등록</a>
+                                <div style="display: flex">
+                                    <select class="datatable-selector" id="criteria">
+                                        <option value="none">기준 선택</option>
+                                        <option value="category">메뉴 이름</option>
+                                        <option value="category">메뉴 분류</option>
+                                        <option value="status">판매 상태</option>
+                                    </select>
+                                    <input class="form-control" type="text" name="memberSearchValue" aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                                    <button type="button" class="btn btn-primary"><i class="fas fa-search"></i></button>
+
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table id="datatablesSimple">
+                                <thead>
+                                    <tr>
+                                        <th>코드</th>
+                                        <th>이름</th>
+                                        <th>분류</th>
+                                        <th>추가금</th>
+                                        <th>판매상태</th>
+                                        <th>탄수화물</th>
+                                        <th>당류</th>
+                                        <th>단백질</th>
+                                        <th>지방</th>
+                                        <th>포화지방</th>
+                                        <th>트랜스지방</th>
+                                        <th>콜레스테롤</th>
+                                        <th>나트륨</th>
+                                        <th>칼로리</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="menuRows">
+                                    <tr th:each="menu : ${menuList}">
+                                        <td th:text="${menu.menuCode}"></td>
+                                        <td th:text="${menu.menuName}"></td>
+                                        <td th:if="${menu.menuCategory=='rice'}">밥</td>
+                                        <td th:if="${menu.menuCategory=='main'}">메인</td>
+                                        <td th:if="${menu.menuCategory=='side'}">서브</td>
+                                        <td th:if="${menu.menuCategory=='kimchi'}">김치</td>
+                                        <td th:text="${menu.menuExtracash}"></td>
+                                        <td th:text="${menu.menuStatus}"></td>
+                                        <td th:text="${menu.menuCarbo}"></td>
+                                        <td th:text="${menu.menuSugar}"></td>
+                                        <td th:text="${menu.menuProtein}"></td>
+                                        <td th:text="${menu.menuFat}"></td>
+                                        <td th:text="${menu.menuSaturatedFat}"></td>
+                                        <td th:text="${menu.menuTransFat}"></td>
+                                        <td th:text="${menu.menuCholesterol}"></td>
+                                        <td th:text="${menu.menuNatrium}"></td>
+                                        <td th:text="${menu.menuCalory}"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+<th:block th:replace="/admin/common/foot.html"></th:block>
+</body>
+</html>
